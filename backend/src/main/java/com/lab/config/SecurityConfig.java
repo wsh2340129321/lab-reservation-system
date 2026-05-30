@@ -40,12 +40,9 @@ public class SecurityConfig {
             .csrf().disable()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .cors().and()
             .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/api/laboratories").permitAll()
-                .antMatchers("/api/laboratories/search").permitAll()
-                .antMatchers("/api/laboratories/{id}").permitAll()
+                .antMatchers("/api/laboratories/**").permitAll()
                 .anyRequest().authenticated()
             .and()
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);

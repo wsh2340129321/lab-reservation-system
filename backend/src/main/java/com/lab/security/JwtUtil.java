@@ -38,13 +38,17 @@ public class JwtUtil {
 
     // 从 JWT 令牌中获取用户名
     public String getUsernameFromToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-        return claims.getSubject();
+            return claims.getSubject();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // 验证 JWT 令牌
