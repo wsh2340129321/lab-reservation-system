@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lab.repository.ReservationTimeMapper">
+    <resultMap id="ReservationTimeResult" type="com.lab.entity.ReservationTime">
+        <id column="id" property="id"/>
+        <result column="laboratory_id" property="laboratoryId"/>
+        <result column="start_time" property="startTime"/>
+        <result column="end_time" property="endTime"/>
+        <result column="day_of_week" property="dayOfWeek"/>
+        <result column="max_bookings" property="maxBookings"/>
+        <result column="is_available" property="isAvailable"/>
+    </resultMap>
+    
+    <select id="findByLaboratoryId" resultMap="ReservationTimeResult">
+        SELECT id, laboratory_id, start_time, end_time, day_of_week, max_bookings, is_available
+        FROM reservation_times
+        WHERE laboratory_id = #{laboratoryId}
+        ORDER BY start_time
+    </select>
+</mapper>
