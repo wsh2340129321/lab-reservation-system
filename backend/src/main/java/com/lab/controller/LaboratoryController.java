@@ -34,6 +34,12 @@ public class LaboratoryController {
         return ResponseEntity.ok("删除成功");
     }
 
+    @GetMapping("/types")
+    public ResponseEntity<?> getTypes() {
+        List<String> types = laboratoryService.findAllTypes();
+        return ResponseEntity.ok(types);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Laboratory laboratory = laboratoryService.findById(id);

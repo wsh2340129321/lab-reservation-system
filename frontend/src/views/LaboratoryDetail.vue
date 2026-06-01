@@ -9,6 +9,10 @@
     </div>
     
     <div class="detail-content" v-if="laboratory">
+      <div class="image-section" v-if="laboratory.imageUrl">
+        <img :src="laboratory.imageUrl" alt="实验室图片" class="lab-image">
+      </div>
+      
       <div class="info-section">
         <h2>基本信息</h2>
         <div class="info-grid">
@@ -166,6 +170,14 @@ onMounted(() => {
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.image-section { margin-bottom: 24px; }
+.lab-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: cover;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .info-section, .equipment-section, .rules-section, .notes-section, .booking-section { margin-bottom: 24px; }
 .info-section h2, .equipment-section h2, .rules-section h2, .notes-section h2, .booking-section h2 {

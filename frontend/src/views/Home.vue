@@ -42,10 +42,18 @@
       <h2>热门实验室</h2>
       <div class="laboratory-grid">
         <div v-for="lab in laboratories" :key="lab.id" class="laboratory-card" @click="goToDetail(lab.id)">
-          <h3>{{ lab.name }}</h3>
-          <p class="location">{{ lab.location }}</p>
-          <p class="type">{{ lab.type }}</p>
-          <p class="capacity">容量: {{ lab.capacity }}人</p>
+          <div class="card-image" v-if="lab.imageUrl">
+            <img :src="lab.imageUrl" :alt="lab.name" />
+          </div>
+          <div class="card-image placeholder" v-else>
+            <el-icon size="48" color="#d1d5db"><Picture /></el-icon>
+          </div>
+          <div class="card-content">
+            <h3>{{ lab.name }}</h3>
+            <p class="location">{{ lab.location }}</p>
+            <p class="type">{{ lab.type }}</p>
+            <p class="capacity">容量: {{ lab.capacity }}人</p>
+          </div>
         </div>
       </div>
     </div>
@@ -56,7 +64,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { Search, Calendar, Bell, User } from '@element-plus/icons-vue'
+import { Search, Calendar, Bell, User, Picture } from '@element-plus/icons-vue'
 import axios from '../axios'
 
 const router = useRouter()
@@ -138,13 +146,32 @@ onMounted(async () => {
 }
 .laboratory-card {
   background-color: white;
-  padding: 24px;
   border-radius: 12px;
+  overflow: hidden;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
   cursor: pointer;
   transition: all 0.2s;
 }
 .laboratory-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+.card-image {
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+}
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.card-image.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card-content {
+  padding: 16px;
+}
 .laboratory-card h3 { margin-bottom: 8px; font-size: 18px; }
 .laboratory-card .location { color: #409eff; font-size: 14px; margin-bottom: 4px; }
 .laboratory-card .type { color: #67c23a; font-size: 14px; margin-bottom: 4px; }

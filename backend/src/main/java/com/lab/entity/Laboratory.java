@@ -20,6 +20,7 @@ public class Laboratory {
     private String rules;
     private String notes;
     private String status;
+    private String imageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

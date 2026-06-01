@@ -45,6 +45,22 @@
         <el-form-item label="使用须知">
           <textarea v-model="labForm.notes" rows="3" class="lab-textarea" />
         </el-form-item>
+        <el-form-item label="实验室图片">
+          <div class="image-upload">
+            <div v-if="labForm.imageUrl" class="preview-image">
+              <img :src="labForm.imageUrl" alt="预览" />
+              <span class="delete-icon" @click="deleteImage">
+                <el-icon size="20" color="white"><Close /></el-icon>
+              </span>
+            </div>
+            <div v-else class="upload-placeholder">
+              <el-icon size="48" color="#d1d5db"><Upload /></el-icon>
+              <p>点击或拖拽上传图片</p>
+              <input type="file" ref="fileInput" accept="image/*" @change="handleImageUpload" style="display: none" />
+              <el-button type="primary" @click="triggerFileUpload">选择图片</el-button>
+            </div>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showLabModal = false">取消</el-button>
@@ -56,14 +72,16 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
+import { Upload, Close } from '@element-plus/icons-vue'
 import axios from '../axios'
 
 const showLabModal = ref(false)
 const laboratories = ref([])
+const fileInput = ref(null)
 
 const labForm = reactive({
   id: null, name: '', location: '', type: '', capacity: '',
-  equipment: '', rules: '', notes: '', status: 'AVAILABLE'
+  equipment: '', rules: '', notes: '', status: 'AVAILABLE', imageUrl: ''
 })
 
 const fetchLaboratories = async () => {
@@ -105,7 +123,48 @@ const saveLab = async () => {
 const resetLabForm = () => {
   labForm.id = null; labForm.name = ''; labForm.location = ''; labForm.type = '';
   labForm.capacity = ''; labForm.equipment = ''; labForm.rules = ''; labForm.notes = '';
-  labForm.status = 'AVAILABLE';
+  labForm.status = 'AVAILABLE'; labForm.imageUrl = '';
+}
+
+const triggerFileUpload = () => {
+  fileInput.value?.click()
+}
+
+const handleImageUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    let uploadUrl = '/upload/image'
+    if (labForm.id) {
+      uploadUrl = `/upload/laboratory/${labForm.id}/image`
+    }
+
+    const response = await axios.post(uploadUrl, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    if (response.data.success) {
+      labForm.imageUrl = response.data.data
+    } else {
+      alert('上传失败：' + response.data.message)
+    }
+  } catch (error) {
+    console.error('Upload failed:', error)
+    alert('上传失败')
+  }
+}
+
+const deleteImage = () => {
+  labForm.imageUrl = ''
+  if (fileInput.value) {
+    fileInput.value.value = ''
+  }
 }
 
 const deleteLab = async (id) => {
@@ -138,5 +197,57 @@ onMounted(() => {
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   resize: vertical;
+}
+.image-upload {
+  width: 100%;
+}
+.preview-image {
+  position: relative;
+  display: inline-block;
+}
+.preview-image img {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.delete-icon {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  background-color: #ef5350;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.2s;
+}
+.delete-icon:hover {
+  background-color: #c62828;
+  transform: scale(1.1);
+}
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.upload-placeholder:hover {
+  border-color: #409eff;
+  background-color: #ecf5ff;
+}
+.upload-placeholder p {
+  margin: 12px 0;
+  color: #6b7280;
 }
 </style>

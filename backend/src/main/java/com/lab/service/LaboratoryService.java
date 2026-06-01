@@ -97,4 +97,8 @@ public class LaboratoryService {
         }
         return availableTimes;
     }
+
+    public List<String> findAllTypes() {
+        return laboratoryMapper.findAllTypes();
+    }
 }

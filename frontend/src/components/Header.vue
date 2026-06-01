@@ -100,6 +100,11 @@ onUnmounted(() => {
   transition: all 0.2s;
 }
 .nav-item:hover { background-color: #f3f4f6; color: #1f2937; }
+.nav-item.router-link-active,
+.nav-item.router-link-exact-active {
+  background-color: #409eff;
+  color: white;
+}
 .notification-item { position: relative; }
 .badge {
   position: absolute;
