@@ -24,7 +24,7 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="showLabModal" title="实验室信息" width="500px">
+    <el-dialog v-model="showLabModal" title="实验室信息" width="700px">
       <el-form :model="labForm" label-width="100px">
         <el-form-item label="名称"><el-input v-model="labForm.name" /></el-form-item>
         <el-form-item label="位置"><el-input v-model="labForm.location" /></el-form-item>
@@ -61,6 +61,36 @@
             </div>
           </div>
         </el-form-item>
+        <el-form-item label="预约时段">
+          <div class="time-slots-section">
+            <div v-if="timeSlots.length === 0" class="empty-slots">
+              <p>暂无预约时段，请点击下方按钮添加</p>
+            </div>
+            <div v-else class="time-slots-list">
+              <div v-for="(slot, index) in timeSlots" :key="index" class="time-slot-item">
+                <div class="slot-row">
+                  <el-time-picker
+                    v-model="slot.startTime"
+                    format="HH:mm"
+                    value-format="HH:mm:ss"
+                    placeholder="开始时间"
+                    class="time-picker"
+                  />
+                  <span class="time-separator">-</span>
+                  <el-time-picker
+                    v-model="slot.endTime"
+                    format="HH:mm"
+                    value-format="HH:mm:ss"
+                    placeholder="结束时间"
+                    class="time-picker"
+                  />
+                  <el-button size="small" type="danger" @click="removeTimeSlot(index)">删除</el-button>
+                </div>
+              </div>
+            </div>
+            <el-button type="success" size="small" @click="addTimeSlot" class="add-slot-btn">+ 添加时段</el-button>
+          </div>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="showLabModal = false">取消</el-button>
@@ -84,6 +114,8 @@ const labForm = reactive({
   equipment: '', rules: '', notes: '', status: 'AVAILABLE', imageUrl: ''
 })
 
+const timeSlots = ref([])
+
 const fetchLaboratories = async () => {
   try {
     const response = await axios.get('/laboratories')
@@ -95,24 +127,81 @@ const fetchLaboratories = async () => {
 
 const addLab = () => {
   resetLabForm()
+  timeSlots.value = []
   showLabModal.value = true
 }
 
-const editLab = (lab) => {
+const originalTimeSlots = ref([])
+
+const editLab = async (lab) => {
   Object.assign(labForm, lab)
+  timeSlots.value = []
+  originalTimeSlots.value = []
+  if (lab.id) {
+    await fetchTimeSlots(lab.id)
+    originalTimeSlots.value = JSON.parse(JSON.stringify(timeSlots.value))
+  }
   showLabModal.value = true
+}
+
+const fetchTimeSlots = async (laboratoryId) => {
+  try {
+    const response = await axios.get(`/reservation-times/laboratory/${laboratoryId}`)
+    timeSlots.value = response.data.map(slot => ({
+      id: slot.id,
+      startTime: slot.startTime,
+      endTime: slot.endTime
+    }))
+  } catch (error) {
+    console.error('Failed to fetch time slots:', error)
+  }
 }
 
 const saveLab = async () => {
-  try {
-    if (labForm.id) {
-      await axios.put(`/laboratories/${labForm.id}`, labForm)
-    } else {
-      await axios.post('/laboratories', labForm)
+  for (let i = 0; i < timeSlots.value.length; i++) {
+    const slot = timeSlots.value[i]
+    if (!slot.startTime || !slot.endTime) {
+      alert('请填写完整的时段时间')
+      return
     }
+    if (slot.startTime >= slot.endTime) {
+      alert(`第${i + 1}个时段的结束时间不能早于或等于开始时间`)
+      return
+    }
+  }
+  
+  try {
+    let labId = labForm.id
+    
+    if (labId) {
+      await axios.put(`/laboratories/${labId}`, labForm)
+      
+      const slotsChanged = JSON.stringify(timeSlots.value) !== JSON.stringify(originalTimeSlots.value)
+      
+      if (slotsChanged) {
+        await axios.delete(`/reservation-times/laboratory/${labId}`)
+      }
+    } else {
+      const response = await axios.post('/laboratories', labForm)
+      labId = response.data.id
+    }
+    
+    if (timeSlots.value.length > 0 && (labForm.id ? JSON.stringify(timeSlots.value) !== JSON.stringify(originalTimeSlots.value) : true)) {
+      const reservationTimes = timeSlots.value.map(slot => ({
+        laboratoryId: labId,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        maxBookings: 1,
+        isAvailable: true
+      }))
+      await axios.post('/reservation-times/batch', reservationTimes)
+    }
+    
     showLabModal.value = false
     fetchLaboratories()
     resetLabForm()
+    timeSlots.value = []
+    originalTimeSlots.value = []
     alert('保存成功')
   } catch (error) {
     const message = error.response?.data || '保存失败'
@@ -165,6 +254,18 @@ const deleteImage = () => {
   if (fileInput.value) {
     fileInput.value.value = ''
   }
+}
+
+const addTimeSlot = () => {
+  timeSlots.value.push({
+    id: null,
+    startTime: '',
+    endTime: ''
+  })
+}
+
+const removeTimeSlot = (index) => {
+  timeSlots.value.splice(index, 1)
 }
 
 const deleteLab = async (id) => {
@@ -249,5 +350,42 @@ onMounted(() => {
 .upload-placeholder p {
   margin: 12px 0;
   color: #6b7280;
+}
+.time-slots-section {
+  margin-top: 8px;
+}
+.empty-slots {
+  padding: 16px;
+  text-align: center;
+  background-color: #f9fafb;
+  border-radius: 8px;
+  color: #6b7280;
+}
+.time-slots-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+.time-slot-item {
+  padding: 8px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.slot-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.time-picker {
+  flex: 1;
+  min-width: 100px;
+}
+.time-separator {
+  font-weight: bold;
+  color: #6b7280;
+  font-size: 14px;
+}
+.add-slot-btn {
+  margin-top: 8px;
 }
 </style>

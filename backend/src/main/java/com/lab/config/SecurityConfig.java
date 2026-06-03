@@ -64,6 +64,7 @@ public class SecurityConfig {
             .authorizeRequests()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers("/api/laboratories/**").permitAll()
+                .antMatchers("/api/reservation-times/**").permitAll()
                 .antMatchers("/api/upload/**").permitAll()
                 .antMatchers("/uploads/**").permitAll()
                 .anyRequest().authenticated()

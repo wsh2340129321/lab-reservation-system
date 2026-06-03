@@ -32,4 +32,12 @@
         WHERE user_id = #{userId} AND status = #{status}
         ORDER BY reservation_date DESC, created_at DESC
     </select>
+    
+    <delete id="deleteByLaboratoryId">
+        DELETE FROM reservations WHERE laboratory_id = #{laboratoryId}
+    </delete>
+    
+    <delete id="deleteByReservationTimeId">
+        DELETE FROM reservations WHERE reservation_time_id = #{reservationTimeId}
+    </delete>
 </mapper>

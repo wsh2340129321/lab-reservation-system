@@ -7,12 +7,12 @@
           <h2>实验室预约系统</h2>
           <p>欢迎登录</p>
         </div>
-        <el-form :model="form" ref="formRef" label-width="80px">
+        <el-form :model="form" ref="formRef" label-width="80px" autocomplete="off">
           <el-form-item label="学号" prop="studentId">
-            <el-input v-model="form.studentId" placeholder="请输入学号" prefix-icon="User" />
+            <el-input v-model="form.studentId" placeholder="请输入学号" prefix-icon="User" autocomplete="username" />
           </el-form-item>
           <el-form-item label="密码" prop="password">
-            <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" />
+            <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" autocomplete="current-password" />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleLogin" class="login-btn" :loading="loading">登录</el-button>

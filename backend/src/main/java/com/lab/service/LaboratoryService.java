@@ -32,11 +32,27 @@ public class LaboratoryService {
     }
 
     public Laboratory update(Laboratory laboratory) {
+        Laboratory existingLaboratory = laboratoryMapper.selectById(laboratory.getId());
+        
+        if (existingLaboratory != null && "AVAILABLE".equals(existingLaboratory.getStatus()) && "UNAVAILABLE".equals(laboratory.getStatus())) {
+            com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.lab.entity.Reservation> queryWrapper = 
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+            queryWrapper.eq(com.lab.entity.Reservation::getLaboratoryId, laboratory.getId())
+                       .in(com.lab.entity.Reservation::getStatus, "PENDING", "CONFIRMED");
+            List<com.lab.entity.Reservation> pendingReservations = reservationMapper.selectList(queryWrapper);
+            
+            if (!pendingReservations.isEmpty()) {
+                throw new RuntimeException("该实验室存在待使用的预约，请先取消这些预约");
+            }
+        }
+        
         laboratoryMapper.updateById(laboratory);
         return laboratory;
     }
 
     public void delete(Long id) {
+        reservationTimeMapper.deleteByLaboratoryId(id);
+        reservationMapper.deleteByLaboratoryId(id);
         laboratoryMapper.deleteById(id);
     }
 

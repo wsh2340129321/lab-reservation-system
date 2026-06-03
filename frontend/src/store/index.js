@@ -31,7 +31,7 @@ export default createStore({
     },
     logout({ commit }) { commit('CLEAR_AUTH') },
     async fetchNotifications({ commit, state }) {
-      if (!state.user) return
+      if (!state.user || !state.user.id) return
       const res = await axios.get(`/notifications/user/${state.user.id}`)
       commit('SET_NOTIFICATIONS', res.data)
     },

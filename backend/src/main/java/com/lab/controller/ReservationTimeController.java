@@ -50,4 +50,18 @@ public class ReservationTimeController {
         List<ReservationTime> reservationTimes = reservationTimeService.findByLaboratoryId(laboratoryId);
         return ResponseEntity.ok(reservationTimes);
     }
+
+    @PostMapping("/batch")
+    public ResponseEntity<?> batchCreate(@RequestBody List<ReservationTime> reservationTimes) {
+        for (ReservationTime time : reservationTimes) {
+            reservationTimeService.create(time);
+        }
+        return ResponseEntity.ok("批量创建成功");
+    }
+
+    @DeleteMapping("/laboratory/{laboratoryId}")
+    public ResponseEntity<?> deleteByLaboratoryId(@PathVariable Long laboratoryId) {
+        reservationTimeService.deleteByLaboratoryId(laboratoryId);
+        return ResponseEntity.ok("删除成功");
+    }
 }

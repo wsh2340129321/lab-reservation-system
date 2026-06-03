@@ -9,4 +9,5 @@ import java.util.List;
 @Mapper
 public interface ReservationTimeMapper extends BaseMapper<ReservationTime> {
     List<ReservationTime> findByLaboratoryId(Long laboratoryId);
+    void deleteByLaboratoryId(Long laboratoryId);
 }

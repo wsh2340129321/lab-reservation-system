@@ -62,9 +62,9 @@
           @change="fetchAvailableTimes" />
         
         <div class="time-slots" v-if="availableTimes.length > 0">
-          <div v-for="time in availableTimes" :key="time.id" class="time-slot" :class="{ available: time.isAvailable, booked: !time.isAvailable, selected: selectedTime && selectedTime.id === time.id }" @click="time.isAvailable && selectTime(time)">
+          <div v-for="time in availableTimes" :key="time.id" class="time-slot" :class="{ available: time.isAvailable, booked: !time.isAvailable && !time.isExpired, expired: time.isExpired, selected: selectedTime && selectedTime.id === time.id }" @click="time.isAvailable && selectTime(time)">
             <span>{{ time.startTime }} - {{ time.endTime }}</span>
-            <span class="slot-status">{{ time.isAvailable ? '可预约' : '已预约' }}</span>
+            <span class="slot-status">{{ time.isExpired ? '已过期' : (time.isAvailable ? '可预约' : '已预约') }}</span>
           </div>
         </div>
         
@@ -113,7 +113,20 @@ const fetchAvailableTimes = async () => {
     const response = await axios.get(`/laboratories/${route.params.id}/available-times`, {
       params: { date: selectedDate.value }
     })
-    availableTimes.value = response.data
+    
+    const now = dayjs()
+    const today = now.format('YYYY-MM-DD')
+    
+    availableTimes.value = response.data.map(time => {
+      if (selectedDate.value === today) {
+        const startTime = dayjs(`${selectedDate.value} ${time.startTime}`)
+        if (now.isAfter(startTime)) {
+          return { ...time, isAvailable: false, isExpired: true }
+        }
+      }
+      return { ...time, isExpired: false }
+    })
+    
     selectedTime.value = null
   } catch (error) {
     console.error('Failed to fetch available times:', error)
@@ -208,8 +221,10 @@ onMounted(() => {
 .time-slot.available.selected { background-color: #4caf50; border: 2px solid #2e7d32; color: white; transform: scale(1.02); }
 .time-slot.available.selected .slot-status { background-color: white; color: #4caf50; }
 .time-slot.booked { background-color: #ffebee; border: 2px solid #ef5350; cursor: not-allowed; }
+.time-slot.expired { background-color: #f5f5f5; border: 2px solid #e0e0e0; cursor: not-allowed; }
 .slot-status { font-size: 12px; padding: 2px 8px; border-radius: 10px; }
 .time-slot.available .slot-status { background-color: #4caf50; color: white; }
 .time-slot.booked .slot-status { background-color: #ef5350; color: white; }
+.time-slot.expired .slot-status { background-color: #9e9e9e; color: white; }
 .booking-btn { width: 100%; padding: 12px; font-size: 16px; }
 </style>

@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class NotificationService {
@@ -27,6 +29,8 @@ public class NotificationService {
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final int REMINDER_HOURS_BEFORE = 1;
+    
+    private Set<Long> notifiedReservations = ConcurrentHashMap.newKeySet();
 
     public Notification create(Long userId, String type, String content) {
         Notification notification = new Notification();
@@ -79,8 +83,12 @@ public class NotificationService {
                     
                     if (currentTime.isAfter(reminderTime.minusMinutes(1)) && 
                         currentTime.isBefore(reminderTime.plusMinutes(1))) {
-                        create(reservation.getUserId(), "RESERVATION_REMINDER", 
-                               "您预约的实验室时段即将开始（" + time.getStartTime() + "）");
+                        
+                        if (!notifiedReservations.contains(reservation.getId())) {
+                            create(reservation.getUserId(), "RESERVATION_REMINDER", 
+                                   "您预约的实验室时段即将开始（" + time.getStartTime() + "）");
+                            notifiedReservations.add(reservation.getId());
+                        }
                     }
                 }
             }
@@ -92,7 +100,7 @@ public class NotificationService {
     private void updateCompletedReservations() {
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = now.toLocalDate();
-        LocalTime currentTime = now.toLocalTime();
+        LocalTime currentTime = now.toLocalTime().withNano(0);
 
         List<Reservation> reservations = reservationMapper.selectList(null);
         
@@ -102,13 +110,27 @@ public class NotificationService {
                 
                 ReservationTime time = reservationTimeMapper.selectById(reservation.getReservationTimeId());
                 if (time != null) {
-                    LocalTime endTime = LocalTime.parse(time.getEndTime(), TIME_FORMATTER);
+                    String endTimeStr = time.getEndTime();
                     
-                    if (reservation.getReservationDate().isBefore(today) || 
-                        (reservation.getReservationDate().equals(today) && currentTime.isAfter(endTime))) {
-                        
+                    if (reservation.getReservationDate().isBefore(today)) {
                         reservation.setStatus("COMPLETED");
                         reservationMapper.updateById(reservation);
+                    } else if (reservation.getReservationDate().equals(today)) {
+                        if ("24:00:00".equals(endTimeStr)) {
+                            continue;
+                        }
+                        
+                        LocalTime endTime;
+                        try {
+                            endTime = LocalTime.parse(endTimeStr, TIME_FORMATTER);
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        
+                        if (currentTime.isAfter(endTime)) {
+                            reservation.setStatus("COMPLETED");
+                            reservationMapper.updateById(reservation);
+                        }
                     }
                 }
             }

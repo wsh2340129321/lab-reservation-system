@@ -7,21 +7,21 @@
           <h2>实验室预约系统</h2>
           <p>注册账号</p>
         </div>
-        <el-form :model="form" ref="formRef" label-width="80px">
+        <el-form :model="form" ref="formRef" label-width="80px" autocomplete="off">
           <el-form-item label="学号" prop="studentId">
-            <el-input v-model="form.studentId" placeholder="请输入学号" prefix-icon="User" />
+            <el-input v-model="form.studentId" placeholder="请输入学号" prefix-icon="User" autocomplete="new-username" />
           </el-form-item>
           <el-form-item label="姓名" prop="username">
-            <el-input v-model="form.username" placeholder="请输入姓名" prefix-icon="User" />
+            <el-input v-model="form.username" placeholder="请输入姓名" prefix-icon="User" autocomplete="name" />
           </el-form-item>
           <el-form-item label="邮箱" prop="email">
-            <el-input v-model="form.email" placeholder="请输入邮箱" prefix-icon="Mail" />
+            <el-input v-model="form.email" placeholder="请输入邮箱" prefix-icon="Mail" autocomplete="new-email" />
           </el-form-item>
           <el-form-item label="密码" prop="password">
-            <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" />
+            <el-input v-model="form.password" type="password" placeholder="请输入密码" prefix-icon="Lock" autocomplete="new-password" />
           </el-form-item>
           <el-form-item label="确认密码" prop="confirmPassword">
-            <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" prefix-icon="Lock" />
+            <el-input v-model="form.confirmPassword" type="password" placeholder="请确认密码" prefix-icon="Lock" autocomplete="new-password" />
           </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="handleRegister" class="register-btn" :loading="loading">注册</el-button>

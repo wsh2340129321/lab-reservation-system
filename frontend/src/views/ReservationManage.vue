@@ -6,9 +6,12 @@
     </div>
     <el-table :data="reservations" border>
       <el-table-column prop="id" label="预约ID" />
-      <el-table-column prop="laboratoryId" label="实验室ID" />
-      <el-table-column prop="userId" label="用户ID" />
+      <el-table-column prop="laboratoryName" label="实验室名称" />
+      <el-table-column prop="userName" label="用户姓名" />
+      <el-table-column prop="studentId" label="学号" />
       <el-table-column prop="reservationDate" label="预约日期" />
+      <el-table-column prop="startTime" label="开始时间" />
+      <el-table-column prop="endTime" label="结束时间" />
       <el-table-column prop="status" label="状态">
         <template #default="scope">
           <span :class="getStatusClass(scope.row.status)">
@@ -66,8 +69,8 @@ const rejectReservation = async (reservation) => {
 
 const exportReservations = async () => {
   try {
-    const response = await axios.get('/reservations/export')
-    const blob = new Blob([response.data], { type: 'text/csv' })
+    const response = await axios.get('/reservations/export', { responseType: 'blob' })
+    const blob = new Blob([response.data], { type: 'text/csv;charset=UTF-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url; a.download = 'reservations.csv'; a.click(); URL.revokeObjectURL(url)

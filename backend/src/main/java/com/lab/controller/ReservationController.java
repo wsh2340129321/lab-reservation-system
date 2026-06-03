@@ -89,11 +89,9 @@ public class ReservationController {
         if (laboratoryId != null || studentId != null || startDate != null || endDate != null || status != null) {
             LocalDate start = startDate != null ? LocalDate.parse(startDate) : null;
             LocalDate end = endDate != null ? LocalDate.parse(endDate) : null;
-            List<Reservation> reservations = reservationService.findByConditions(laboratoryId, studentId, start, end, status);
-            return ResponseEntity.ok(reservations);
+            return ResponseEntity.ok(reservationService.findByConditionsWithDetails(laboratoryId, studentId, start, end, status));
         }
-        List<Reservation> reservations = reservationService.findAll();
-        return ResponseEntity.ok(reservations);
+        return ResponseEntity.ok(reservationService.findAllWithDetails());
     }
 
     @GetMapping("/export")
@@ -105,19 +103,45 @@ public class ReservationController {
             @RequestParam(required = false) String status) {
         LocalDate start = startDate != null ? LocalDate.parse(startDate) : null;
         LocalDate end = endDate != null ? LocalDate.parse(endDate) : null;
-        List<Reservation> reservations = reservationService.findByConditions(laboratoryId, studentId, start, end, status);
+        List<com.lab.dto.ReservationDetailDTO> reservations = reservationService.findByConditionsWithDetails(laboratoryId, studentId, start, end, status);
+        
         StringBuilder csv = new StringBuilder();
-        csv.append("预约ID,用户ID,实验室ID,时段ID,预约日期,状态,创建时间\n");
-        for (Reservation r : reservations) {
+        csv.append("\uFEFF");
+        csv.append("预约ID,实验室名称,用户姓名,学号,预约日期,开始时间,结束时间,状态\n");
+        for (com.lab.dto.ReservationDetailDTO r : reservations) {
             csv.append(r.getId()).append(",")
-               .append(r.getUserId()).append(",")
-               .append(r.getLaboratoryId()).append(",")
-               .append(r.getReservationTimeId()).append(",")
+               .append(escapeCsv(r.getLaboratoryName())).append(",")
+               .append(escapeCsv(r.getUserName())).append(",")
+               .append(r.getStudentId()).append(",")
                .append(r.getReservationDate()).append(",")
-               .append(r.getStatus()).append(",")
-               .append(r.getCreatedAt()).append("\n");
+               .append(r.getStartTime()).append(",")
+               .append(r.getEndTime()).append(",")
+               .append(getStatusText(r.getStatus())).append("\n");
         }
-        return ResponseEntity.ok(csv.toString());
+        
+        return ResponseEntity.ok()
+                .header("Content-Type", "text/csv; charset=UTF-8")
+                .header("Content-Disposition", "attachment; filename=reservations.csv")
+                .body(csv.toString());
+    }
+    
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
+    }
+    
+    private String getStatusText(String status) {
+        if (status == null) return "";
+        java.util.Map<String, String> map = new java.util.HashMap<>();
+        map.put("PENDING", "待使用");
+        map.put("CONFIRMED", "已确认");
+        map.put("COMPLETED", "已使用");
+        map.put("CANCELLED", "已取消");
+        map.put("REJECTED", "已驳回");
+        return map.getOrDefault(status, status);
     }
 
     @GetMapping("/check-availability")

@@ -13,7 +13,6 @@ public class ReservationTime {
     private Long laboratoryId;
     private String startTime;
     private String endTime;
-    private String dayOfWeek;
     private Integer maxBookings;
     private Boolean isAvailable;
 }

@@ -13,4 +13,6 @@ public interface ReservationMapper extends BaseMapper<Reservation> {
     List<Reservation> findByUserId(Long userId);
     List<Reservation> findByLaboratoryIdAndDate(Long laboratoryId, LocalDate date);
     List<Reservation> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") String status);
+    void deleteByLaboratoryId(Long laboratoryId);
+    void deleteByReservationTimeId(Long reservationTimeId);
 }

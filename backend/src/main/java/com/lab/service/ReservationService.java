@@ -12,9 +12,13 @@ import com.lab.repository.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.lab.dto.ReservationDetailDTO;
+
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -147,6 +151,24 @@ public class ReservationService {
     }
 
     public String validateReservation(Reservation reservation) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = now.toLocalDate();
+        LocalTime currentTime = now.toLocalTime();
+        
+        if (reservation.getReservationDate().isBefore(today)) {
+            return "不能预约过去的日期";
+        }
+        
+        if (reservation.getReservationDate().equals(today)) {
+            ReservationTime time = reservationTimeMapper.selectById(reservation.getReservationTimeId());
+            if (time != null) {
+                LocalTime startTime = LocalTime.parse(time.getStartTime(), TIME_FORMATTER);
+                if (currentTime.isAfter(startTime)) {
+                    return "该时段已过，无法预约";
+                }
+            }
+        }
+        
         if (!checkAvailability(reservation.getLaboratoryId(), reservation.getReservationTimeId(), reservation.getReservationDate())) {
             return "该时段已被预约";
         }
@@ -182,5 +204,35 @@ public class ReservationService {
         LocalTime end = LocalTime.parse(time.getEndTime(), TIME_FORMATTER);
         return java.time.Duration.between(start, end).toMinutesPart() + 
                java.time.Duration.between(start, end).toHoursPart() * 60;
+    }
+
+    public List<ReservationDetailDTO> findAllWithDetails() {
+        List<Reservation> reservations = reservationMapper.selectList(null);
+        return convertToDetailDTO(reservations);
+    }
+
+    public List<ReservationDetailDTO> findByConditionsWithDetails(Long laboratoryId, String studentId, LocalDate startDate, LocalDate endDate, String status) {
+        List<Reservation> reservations = findByConditions(laboratoryId, studentId, startDate, endDate, status);
+        return convertToDetailDTO(reservations);
+    }
+
+    private List<ReservationDetailDTO> convertToDetailDTO(List<Reservation> reservations) {
+        List<ReservationDetailDTO> detailList = new ArrayList<>();
+        
+        for (Reservation reservation : reservations) {
+            User user = userMapper.selectById(reservation.getUserId());
+            Laboratory lab = laboratoryMapper.selectById(reservation.getLaboratoryId());
+            ReservationTime time = reservationTimeMapper.selectById(reservation.getReservationTimeId());
+            
+            String studentId = user != null ? user.getStudentId() : "";
+            String userName = user != null ? user.getUsername() : "";
+            String labName = lab != null ? lab.getName() : "";
+            String startTime = time != null ? time.getStartTime() : "";
+            String endTime = time != null ? time.getEndTime() : "";
+            
+            detailList.add(new ReservationDetailDTO(reservation, studentId, userName, labName, startTime, endTime));
+        }
+        
+        return detailList;
     }
 }
