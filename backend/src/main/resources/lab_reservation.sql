@@ -238,6 +238,7 @@ CREATE TABLE `users`  (
   `phone` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `role` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'STUDENT',
   `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'ACTIVE',
+  `ban_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '封禁理由',
   `created_at` timestamp(0) NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp(0) NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP(0),
   PRIMARY KEY (`id`) USING BTREE,
@@ -248,12 +249,12 @@ CREATE TABLE `users`  (
 -- ----------------------------
 -- Records of users
 -- ----------------------------
-INSERT INTO `users` VALUES (1, 'admin00', '111', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin@example.com', NULL, 'ADMIN', 'ACTIVE', '2026-04-22 15:03:43', '2026-05-27 18:20:10');
-INSERT INTO `users` VALUES (2, '2021001', '张三', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'zhangsan@example.com', NULL, 'STUDENT', 'ACTIVE', '2026-04-22 15:03:43', '2026-04-22 15:03:43');
-INSERT INTO `users` VALUES (3, '2021002', '李四', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'lisi@example.com', NULL, 'STUDENT', 'ACTIVE', '2026-04-22 15:03:43', '2026-04-22 15:03:43');
-INSERT INTO `users` VALUES (4, 'test001', 'test', '$2a$10$jugco0Gfg2GZGpxsftMTZuZt2o64.c94RN.qmGs7yf/GvMfBCSO7S', 'test@example.com', NULL, 'STUDENT', 'ACTIVE', '2026-05-27 16:35:22', '2026-05-27 16:35:22');
-INSERT INTO `users` VALUES (5, 'test002', 'test2', '$2a$10$8Rrr.ZdHuCDlz/QP9rLpeui6uFfzs6zcduB5hjbzTGm0e9csZ1FRi', 'test2@example.com', NULL, 'STUDENT', 'ACTIVE', '2026-05-27 16:39:20', '2026-05-27 16:39:20');
-INSERT INTO `users` VALUES (6, 'test003', 'test3', '$2a$10$zDMDrtbeD8qWVGchRYx32uzRAfwxAwUWNPUIIpf8V1nkswMUuakqW', 'test3@example.com', NULL, 'STUDENT', 'ACTIVE', '2026-05-27 16:41:25', '2026-05-27 16:41:25');
-INSERT INTO `users` VALUES (8, 'admin', '管理员', '$2a$10$LLwqoF3rMGDIme.oyy4ZfO/u3Gfd6WpjcZlkDKtFJQLbbT5T77NV2', 'admin001@example.com', NULL, 'ADMIN', 'ACTIVE', '2026-05-27 17:52:23', '2026-05-27 18:20:19');
+INSERT INTO `users` VALUES (1, 'admin00', '111', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'admin@example.com', NULL, 'ADMIN', 'ACTIVE', NULL, '2026-04-22 15:03:43', '2026-05-27 18:20:10');
+INSERT INTO `users` VALUES (2, '2021001', '张三', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'zhangsan@example.com', NULL, 'STUDENT', 'ACTIVE', NULL, '2026-04-22 15:03:43', '2026-04-22 15:03:43');
+INSERT INTO `users` VALUES (3, '2021002', '李四', '$2a$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', 'lisi@example.com', NULL, 'STUDENT', 'ACTIVE', NULL, '2026-04-22 15:03:43', '2026-04-22 15:03:43');
+INSERT INTO `users` VALUES (4, 'test001', 'test', '$2a$10$jugco0Gfg2GZGpxsftMTZuZt2o64.c94RN.qmGs7yf/GvMfBCSO7S', 'test@example.com', NULL, 'STUDENT', 'ACTIVE', NULL, '2026-05-27 16:35:22', '2026-05-27 16:35:22');
+INSERT INTO `users` VALUES (5, 'test002', 'test2', '$2a$10$8Rrr.ZdHuCDlz/QP9rLpeui6uFfzs6zcduB5hjbzTGm0e9csZ1FRi', 'test2@example.com', NULL, 'STUDENT', 'ACTIVE', NULL, '2026-05-27 16:39:20', '2026-05-27 16:39:20');
+INSERT INTO `users` VALUES (6, 'test003', 'test3', '$2a$10$zDMDrtbeD8qWVGchRYx32uzRAfwxAwUWNPUIIpf8V1nkswMUuakqW', 'test3@example.com', NULL, 'STUDENT', 'ACTIVE', NULL, '2026-05-27 16:41:25', '2026-05-27 16:41:25');
+INSERT INTO `users` VALUES (8, 'admin', '管理员', '$2a$10$LLwqoF3rMGDIme.oyy4ZfO/u3Gfd6WpjcZlkDKtFJQLbbT5T77NV2', 'admin001@example.com', NULL, 'ADMIN', 'ACTIVE', NULL, '2026-05-27 17:52:23', '2026-05-27 18:20:19');
 
 SET FOREIGN_KEY_CHECKS = 1;

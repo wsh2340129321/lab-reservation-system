@@ -19,6 +19,7 @@ public class User {
     private String phone;
     private String role;
     private String status;
+    private String banReason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

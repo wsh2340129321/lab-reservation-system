@@ -10,10 +10,11 @@
       <el-table-column prop="status" label="状态">
         <template #default="scope">
           <span :class="scope.row.status.toLowerCase() === 'active' ? 'status-active' : 'status-blocked'">
-            {{ scope.row.status === 'ACTIVE' ? '正常' : '封禁' }}
+            {{ scope.row.status === 'ACTIVE' ? '正常' : (scope.row.status === 'BANNED' ? '封禁' : scope.row.status) }}
           </span>
         </template>
       </el-table-column>
+      <el-table-column prop="banReason" label="封禁理由" show-overflow-tooltip />
       <el-table-column label="操作">
         <template #default="scope">
           <el-button size="small" @click="viewUserReservations(scope.row)">查看预约</el-button>
@@ -44,17 +45,32 @@
         </el-table-column>
       </el-table>
     </el-dialog>
+
+    <el-dialog v-model="showBanDialog" :title="'封禁用户'" width="400px">
+      <el-form :model="banForm" label-width="80px">
+        <el-form-item label="封禁理由">
+          <el-input v-model="banForm.reason" type="textarea" :rows="3" placeholder="请输入封禁理由" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showBanDialog = false">取消</el-button>
+        <el-button type="primary" @click="confirmBan">确认封禁</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import axios from '../axios'
 
 const users = ref([])
 const showUserReservations = ref(false)
 const userReservations = ref([])
 const currentUser = ref({ id: null, username: '' })
+const showBanDialog = ref(false)
+const banForm = reactive({ reason: '' })
+const userToBan = ref(null)
 
 const fetchUsers = async () => {
   try {
@@ -77,11 +93,34 @@ const viewUserReservations = async (user) => {
 }
 
 const toggleUserStatus = async (user) => {
-  const newStatus = user.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE'
+  if (user.status === 'ACTIVE') {
+    userToBan.value = user
+    banForm.reason = ''
+    showBanDialog.value = true
+  } else if (user.status === 'BANNED') {
+    try {
+      await axios.put(`/users/${user.id}/unban`)
+      user.status = 'ACTIVE'
+      user.banReason = null
+      alert('用户已解封')
+    } catch (error) {
+      const message = error.response?.data || '操作失败'
+      alert(message)
+    }
+  }
+}
+
+const confirmBan = async () => {
+  if (!banForm.reason.trim()) {
+    alert('请输入封禁理由')
+    return
+  }
   try {
-    await axios.put(`/users/${user.id}/status`, null, { params: { status: newStatus } })
-    user.status = newStatus
-    alert(`用户已${newStatus === 'ACTIVE' ? '解封' : '封禁'}`)
+    await axios.put(`/users/${userToBan.value.id}/ban`, { reason: banForm.reason })
+    userToBan.value.status = 'BANNED'
+    userToBan.value.banReason = banForm.reason
+    showBanDialog.value = false
+    alert('用户已封禁')
   } catch (error) {
     const message = error.response?.data || '操作失败'
     alert(message)

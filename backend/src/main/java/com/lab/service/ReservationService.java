@@ -151,6 +151,11 @@ public class ReservationService {
     }
 
     public String validateReservation(Reservation reservation) {
+        User user = userMapper.selectById(reservation.getUserId());
+        if (user != null && "BANNED".equals(user.getStatus())) {
+            return "您的账号已被封禁，无法进行预约！封禁理由：" + (user.getBanReason() != null ? user.getBanReason() : "未说明");
+        }
+        
         LocalDateTime now = LocalDateTime.now();
         LocalDate today = now.toLocalDate();
         LocalTime currentTime = now.toLocalTime();

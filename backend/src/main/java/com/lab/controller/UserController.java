@@ -90,6 +90,22 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @PutMapping("/{id}/ban")
+    public ResponseEntity<?> banUser(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        String reason = request.get("reason");
+        if (reason == null || reason.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("请提供封禁理由");
+        }
+        User user = userService.banUser(id, reason);
+        return ResponseEntity.ok(user);
+    }
+
+    @PutMapping("/{id}/unban")
+    public ResponseEntity<?> unbanUser(@PathVariable Long id) {
+        User user = userService.unbanUser(id);
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping("/{id}/reservations")
     public ResponseEntity<?> getUserReservations(@PathVariable Long id) {
         return userService.getUserReservations(id);

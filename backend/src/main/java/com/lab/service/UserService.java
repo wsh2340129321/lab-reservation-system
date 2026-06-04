@@ -20,6 +20,8 @@ public class UserService {
     private ReservationMapper reservationMapper;
     @Autowired
     private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private NotificationService notificationService;
 
     public User register(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -83,6 +85,38 @@ public class UserService {
             userMapper.updateById(user);
         }
         return user;
+    }
+
+    public User banUser(Long id, String reason) {
+        User user = userMapper.selectById(id);
+        if (user != null) {
+            user.setStatus("BANNED");
+            user.setBanReason(reason);
+            userMapper.updateById(user);
+            notificationService.create(id, "ACCOUNT_BANNED", "您的账号已被封禁！封禁理由：" + reason);
+        }
+        return user;
+    }
+
+    public User unbanUser(Long id) {
+        User user = userMapper.selectById(id);
+        if (user != null) {
+            user.setStatus("ACTIVE");
+            user.setBanReason(null);
+            userMapper.updateById(user);
+            notificationService.create(id, "ACCOUNT_UNBANNED", "您的账号已被解封！");
+        }
+        return user;
+    }
+
+    public boolean isUserBanned(Long userId) {
+        User user = userMapper.selectById(userId);
+        return user != null && "BANNED".equals(user.getStatus());
+    }
+
+    public String getBanReason(Long userId) {
+        User user = userMapper.selectById(userId);
+        return user != null ? user.getBanReason() : null;
     }
 
     public ResponseEntity<?> getUserReservations(Long userId) {
