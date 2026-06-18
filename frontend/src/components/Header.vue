@@ -23,12 +23,16 @@
         <router-link to="/admin/users" class="nav-item">用户管理</router-link>
       </template>
     </nav>
-    <div class="header-right">
+    <div class="header-right" v-if="isLoggedIn">
       <span class="user-info">{{ user?.username }} ({{ user?.studentId }})</span>
       <button @click="handleLogout" class="logout-btn">
         <el-icon><UserFilled /></el-icon>
         退出登录
       </button>
+    </div>
+    <div class="header-right" v-else>
+      <router-link to="/login" class="login-btn">登录</router-link>
+      <router-link to="/register" class="register-btn">注册</router-link>
     </div>
   </header>
 </template>
@@ -46,6 +50,7 @@ let notificationPollingTimer = null
 
 const user = computed(() => store.state.user)
 const isAdmin = computed(() => store.getters.isAdmin)
+const isLoggedIn = computed(() => store.getters.isLoggedIn)
 const unreadCount = computed(() => store.state.unreadCount)
 
 const handleLogout = () => {
@@ -136,4 +141,20 @@ onUnmounted(() => {
   transition: all 0.2s;
 }
 .logout-btn:hover { background-color: #e5e7eb; color: #1f2937; }
+.login-btn, .register-btn {
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.login-btn {
+  color: #6b7280;
+}
+.login-btn:hover { color: #1f2937; }
+.register-btn {
+  background-color: #409eff;
+  color: white;
+}
+.register-btn:hover { background-color: #3b82f6; }
 </style>
