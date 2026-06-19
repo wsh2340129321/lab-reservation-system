@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.lab.repository.ReservationMapper">
+    <resultMap id="ReservationResult" type="com.lab.entity.Reservation">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="laboratory_id" property="laboratoryId"/>
+        <result column="reservation_time_id" property="reservationTimeId"/>
+        <result column="reservation_date" property="reservationDate"/>
+        <result column="status" property="status"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    
+    <select id="findByUserId" resultMap="ReservationResult">
+        SELECT id, user_id, laboratory_id, reservation_time_id, reservation_date, status, created_at, updated_at
+        FROM reservations
+        WHERE user_id = #{userId}
+        ORDER BY reservation_date DESC, created_at DESC
+    </select>
+    
+    <select id="findByLaboratoryIdAndDate" resultMap="ReservationResult">
+        SELECT id, user_id, laboratory_id, reservation_time_id, reservation_date, status, created_at, updated_at
+        FROM reservations
+        WHERE laboratory_id = #{laboratoryId} AND reservation_date = #{date}
+        ORDER BY created_at DESC
+    </select>
+    
+    <select id="findByUserIdAndStatus" resultMap="ReservationResult">
+        SELECT id, user_id, laboratory_id, reservation_time_id, reservation_date, status, created_at, updated_at
+        FROM reservations
+        WHERE user_id = #{userId} AND status = #{status}
+        ORDER BY reservation_date DESC, created_at DESC
+    </select>
+    
+    <delete id="deleteByLaboratoryId">
+        DELETE FROM reservations WHERE laboratory_id = #{laboratoryId}
+    </delete>
+    
+    <delete id="deleteByReservationTimeId">
+        DELETE FROM reservations WHERE reservation_time_id = #{reservationTimeId}
+    </delete>
+</mapper>
